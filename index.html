@@ -2,190 +2,171 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>THE HELL BUTTON?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE VOID</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', cursive;
-            background: #ff00ff;
-            color: #00ff00;
-            text-align: center;
+            background-color: #050505;
+            color: white;
             margin: 0;
             overflow: hidden;
-            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
         }
 
-        .level {
-            display: none;
-            background: white;
-            border: 10px solid black;
-            padding: 30px;
-            width: 450px;
-            color: black;
-            box-shadow: 20px 20px 0px #000;
+        #container {
+            position: relative;
+            width: 800px;
+            height: 600px;
         }
 
-        .active { display: block; }
-
-        input { display: block; margin: 10px auto; padding: 10px; width: 80%; border: 3px solid red; }
-        
-        button {
-            background: yellow;
-            border: 3px solid black;
-            padding: 15px;
-            font-weight: bold;
+        /* Та самая скрытая кнопка */
+        #exitBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            background: none;
+            color: #ff0000;
+            border: 2px solid #ff0000;
+            font-size: 24px;
             cursor: pointer;
-            font-size: 18px;
-            transition: 0.1s;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transition: 0.3s;
         }
 
-        #progress-container {
+        #exitBtn:hover {
+            background: #ff0000;
+            color: black;
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        /* Холст с физикой ткани */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            cursor: crosshair;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: -50px;
             width: 100%;
-            height: 30px;
-            background: #eee;
-            border: 2px solid #000;
-            margin: 20px 0;
-        }
-
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: red;
-        }
-
-        #jumpBtn { position: absolute; }
-        
-        .shake { animation: shake 0.5s infinite; }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            40% { transform: translate(3px, 2px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(0deg); }
+            text-align: center;
+            color: #444;
+            pointer-events: none;
         }
     </style>
 </head>
-<body onclick="playAnnoyingSound()">
+<body>
 
-    <div id="lvl1" class="level active">
-        <h1 class="shake">STEP 1: LOGIN</h1>
-        <p>Type your name (if you can!)</p>
-        <input type="text" placeholder="Your Name" oninput="this.value='ERROR ' + Math.random().toString(36).substring(7)">
-        <button onclick="nextLevel(2)">SUBMIT</button>
-    </div>
-
-    <div id="lvl2" class="level">
-        <h1>STEP 2: AGILITY</h1>
-        <p id="clickTask">Click 50 times to prove you're fast!</p>
-        <button id="jumpBtn" onclick="catchBtn()">CLICK ME!</button>
-    </div>
-
-    <div id="lvl3" class="level">
-        <h1>STEP 3: IQ 200</h1>
-        <p>You have 5 seconds for each!</p>
-        <h2 id="q">123 * 4 = ?</h2>
-        <input type="number" id="ans">
-        <button onclick="checkMath()">GO!</button>
-    </div>
-
-    <div id="lvl4" class="level">
-        <h1>STEP 4: PATIENCE</h1>
-        <p>HOLD to 100%. Don't release or it's 0%!</p>
-        <div id="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <h3 id="status">DO IT!</h3>
-        <button onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()">HOLD ME FOR 15 SECONDS</button>
-    </div>
-
-    <div id="lvl5" class="level">
-        <h1>VICTORY!</h1>
-        <p>You are the most patient human on Earth.</p>
-        <h1 style="font-size: 80px;">🏆</h1>
-        <button onclick="location.reload()">REPLAY THE NIGHTMARE</button>
+    <div id="container">
+        <button id="exitBtn" onclick="finish()">EXIT</button>
+        <canvas id="canvas"></canvas>
+        <div class="hint">TEAR THE DARKNESS TO FIND THE WAY OUT</div>
     </div>
 
     <script>
-        let clicks = 50;
-        let progress = 0;
-        let holdTimer;
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
 
-        // Бесячий звук
-        function playAnnoyingSound(freq = 440) {
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        }
+        let points = [];
+        let mouse = { x: 0, y: 0, active: false };
+        const spacing = 20;
+        const rows = 30;
+        const cols = 40;
 
-        function nextLevel(n) {
-            playAnnoyingSound(600);
-            document.querySelectorAll('.level').forEach(l => l.classList.remove('active'));
-            document.getElementById('lvl' + n).classList.add('active');
-            if(n === 2) {
-                let btn = document.getElementById('jumpBtn');
-                btn.style.left = '50%'; btn.style.top = '50%';
+        // Инициализация ткани (Verlet Physics)
+        for (let y = 0; y <= rows; y++) {
+            for (let x = 0; x <= cols; x++) {
+                points.push({
+                    x: x * spacing,
+                    y: y * spacing,
+                    oldX: x * spacing,
+                    oldY: y * spacing,
+                    pinned: y === 0,
+                    removed: false
+                });
             }
         }
 
-        // LVL 2
-        function catchBtn() {
-            clicks--;
-            playAnnoyingSound(800 + (Math.random() * 500));
-            document.getElementById('clickTask').innerText = "Left: " + clicks;
-            let x = Math.random() * (window.innerWidth - 150);
-            let y = Math.random() * (window.innerHeight - 150);
-            let btn = document.getElementById('jumpBtn');
-            btn.style.left = x + 'px';
-            btn.style.top = y + 'px';
-            if(clicks <= 0) nextLevel(3);
-        }
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "#000000"; // Черные нити
+            ctx.lineWidth = 3;
 
-        // LVL 3
-        function checkMath() {
-            let val = document.getElementById('ans').value;
-            if(val == "492") {
-                nextLevel(4);
-            } else {
-                playAnnoyingSound(100);
-                alert("WRONG! BYE BYE!");
-                location.reload();
-            }
-        }
+            points.forEach(p => {
+                if (!p.pinned && !p.removed) {
+                    // Инерция и гравитация
+                    let vx = (p.x - p.oldX) * 0.95;
+                    let vy = (p.y - p.oldY) * 0.95;
+                    p.oldX = p.x;
+                    p.oldY = p.y;
+                    p.x += vx;
+                    p.y += vy + 0.3; // Гравитация тянет штору вниз
 
-        // LVL 4
-        function startHold() {
-            document.getElementById('status').innerText = "HOLDING...";
-            holdTimer = setInterval(() => {
-                if(progress < 98) progress += 0.8;
-                else progress += 0.05; // Сверх-медленно в конце
-
-                document.getElementById('progress-bar').style.width = progress + "%";
-                playAnnoyingSound(200 + progress * 5); // Звук растет по тональности
-
-                if(progress >= 100) {
-                    clearInterval(holdTimer);
-                    nextLevel(5);
+                    // Взаимодействие с мышкой (разрезание)
+                    if (mouse.active) {
+                        let dx = mouse.x - p.x;
+                        let dy = mouse.y - p.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 15) p.removed = true;
+                    }
                 }
-            }, 100);
+            });
+
+            // Рисование связей
+            ctx.beginPath();
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    let i = y * (cols + 1) + x;
+                    let p = points[i];
+                    if (p.removed) continue;
+
+                    // Вертикальные нити
+                    let pDown = points[i + (cols + 1)];
+                    if (!pDown.removed) {
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(pDown.x, pDown.y);
+                    }
+                    
+                    // Горизонтальные нити
+                    let pRight = points[i + 1];
+                    if (x < cols && !pRight.removed) {
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(pRight.x, pRight.y);
+                    }
+                }
+            }
+            ctx.stroke();
+            requestAnimationFrame(update);
         }
 
-        function stopHold() {
-            clearInterval(holdTimer);
-            if(progress < 100) {
-                playAnnoyingSound(50);
-                progress = 0;
-                document.getElementById('progress-bar').style.width = "0%";
-                document.getElementById('status').innerText = "FALIED! HOLD AGAIN!";
-            }
+        // События мыши
+        window.addEventListener('mousedown', () => mouse.active = true);
+        window.addEventListener('mouseup', () => mouse.active = false);
+        window.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        function finish() {
+            alert("YOU ESCAPED THE VOID.");
+            location.reload();
         }
+
+        update();
     </script>
 </body>
 </html>
