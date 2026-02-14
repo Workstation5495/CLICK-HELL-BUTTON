@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>THE MOST USELESS SITE</title>
+    <title>THE HELL BUTTON?</title>
     <style>
         body {
             font-family: 'Comic Sans MS', cursive;
-            background: #ff00ff; /* Вырвиглазный розовый */
-            color: #00ff00; /* Кислотно-зеленый */
+            background: #ff00ff;
+            color: #00ff00;
             text-align: center;
             margin: 0;
             overflow: hidden;
@@ -22,14 +22,14 @@
             background: white;
             border: 10px solid black;
             padding: 30px;
-            width: 400px;
+            width: 450px;
             color: black;
             box-shadow: 20px 20px 0px #000;
         }
 
         .active { display: block; }
 
-        input { display: block; margin: 10px auto; padding: 10px; width: 80%; }
+        input { display: block; margin: 10px auto; padding: 10px; width: 80%; border: 3px solid red; }
         
         button {
             background: yellow;
@@ -38,6 +38,7 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 18px;
+            transition: 0.1s;
         }
 
         #progress-container {
@@ -55,69 +56,92 @@
         }
 
         #jumpBtn { position: absolute; }
+        
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(3px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(0deg); }
+        }
     </style>
 </head>
-<body>
+<body onclick="playAnnoyingSound()">
 
     <div id="lvl1" class="level active">
-        <h1>STEP 1</h1>
-        <p>Register to win 1,000,000$!</p>
-        <input type="text" placeholder="Name" oninput="this.value='ERROR'">
-        <input type="email" placeholder="Email" id="emailInput">
-        <button onclick="nextLevel(2)">NEXT</button>
+        <h1 class="shake">STEP 1: LOGIN</h1>
+        <p>Type your name (if you can!)</p>
+        <input type="text" placeholder="Your Name" oninput="this.value='ERROR ' + Math.random().toString(36).substring(7)">
+        <button onclick="nextLevel(2)">SUBMIT</button>
     </div>
 
     <div id="lvl2" class="level">
-        <h1>STEP 2</h1>
-        <p id="clickTask">Click the button 20 times!</p>
-        <button id="jumpBtn" onclick="catchBtn()">CLICK ME</button>
+        <h1>STEP 2: AGILITY</h1>
+        <p id="clickTask">Click 50 times to prove you're fast!</p>
+        <button id="jumpBtn" onclick="catchBtn()">CLICK ME!</button>
     </div>
 
     <div id="lvl3" class="level">
-        <h1>STEP 3</h1>
-        <p>Solve to continue. Wrong answer = RESTART SITE!</p>
-        <h2 id="q">77 + 33 = ?</h2>
+        <h1>STEP 3: IQ 200</h1>
+        <p>You have 5 seconds for each!</p>
+        <h2 id="q">123 * 4 = ?</h2>
         <input type="number" id="ans">
-        <button onclick="checkMath()">SUBMIT</button>
+        <button onclick="checkMath()">GO!</button>
     </div>
 
     <div id="lvl4" class="level">
         <h1>STEP 4: PATIENCE</h1>
-        <p>HOLD the button until 100%. If you release - it drops to 0%!</p>
+        <p>HOLD to 100%. Don't release or it's 0%!</p>
         <div id="progress-container">
             <div id="progress-bar"></div>
         </div>
-        <h3 id="status">READY?</h3>
-        <button onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()">HOLD ME TIGHT!</button>
+        <h3 id="status">DO IT!</h3>
+        <button onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()">HOLD ME FOR 15 SECONDS</button>
     </div>
 
     <div id="lvl5" class="level">
-        <h1>YOU DID IT!</h1>
-        <p>You wasted 5 minutes of your life.</p>
-        <h1 style="font-size: 80px;">😜</h1>
-        <button onclick="location.reload()">AGAIN?</button>
+        <h1>VICTORY!</h1>
+        <p>You are the most patient human on Earth.</p>
+        <h1 style="font-size: 80px;">🏆</h1>
+        <button onclick="location.reload()">REPLAY THE NIGHTMARE</button>
     </div>
 
     <script>
-        let clicks = 20;
+        let clicks = 50;
         let progress = 0;
         let holdTimer;
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Бесячий звук
+        function playAnnoyingSound(freq = 440) {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
 
         function nextLevel(n) {
+            playAnnoyingSound(600);
             document.querySelectorAll('.level').forEach(l => l.classList.remove('active'));
             document.getElementById('lvl' + n).classList.add('active');
             if(n === 2) {
-                document.getElementById('jumpBtn').style.left = '50%';
-                document.getElementById('jumpBtn').style.top = '50%';
+                let btn = document.getElementById('jumpBtn');
+                btn.style.left = '50%'; btn.style.top = '50%';
             }
         }
 
         // LVL 2
         function catchBtn() {
             clicks--;
+            playAnnoyingSound(800 + (Math.random() * 500));
             document.getElementById('clickTask').innerText = "Left: " + clicks;
-            let x = Math.random() * (window.innerWidth - 100);
-            let y = Math.random() * (window.innerHeight - 100);
+            let x = Math.random() * (window.innerWidth - 150);
+            let y = Math.random() * (window.innerHeight - 150);
             let btn = document.getElementById('jumpBtn');
             btn.style.left = x + 'px';
             btn.style.top = y + 'px';
@@ -127,19 +151,25 @@
         // LVL 3
         function checkMath() {
             let val = document.getElementById('ans').value;
-            if(val == "110") nextLevel(4);
-            else location.reload(); // Жестокий рестарт
+            if(val == "492") {
+                nextLevel(4);
+            } else {
+                playAnnoyingSound(100);
+                alert("WRONG! BYE BYE!");
+                location.reload();
+            }
         }
 
         // LVL 4
         function startHold() {
-            document.getElementById('status').innerText = "KEEP HOLDING!!!";
+            document.getElementById('status').innerText = "HOLDING...";
             holdTimer = setInterval(() => {
-                if(progress < 99) progress += 1;
-                else progress += 0.1; // Тот самый завис на 99%
+                if(progress < 98) progress += 0.8;
+                else progress += 0.05; // Сверх-медленно в конце
 
                 document.getElementById('progress-bar').style.width = progress + "%";
-                
+                playAnnoyingSound(200 + progress * 5); // Звук растет по тональности
+
                 if(progress >= 100) {
                     clearInterval(holdTimer);
                     nextLevel(5);
@@ -150,9 +180,10 @@
         function stopHold() {
             clearInterval(holdTimer);
             if(progress < 100) {
+                playAnnoyingSound(50);
                 progress = 0;
                 document.getElementById('progress-bar').style.width = "0%";
-                document.getElementById('status').innerText = "YOU LOOSE! HOLD AGAIN!";
+                document.getElementById('status').innerText = "FALIED! HOLD AGAIN!";
             }
         }
     </script>
