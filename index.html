@@ -2,237 +2,159 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WORST BUTTON EVER?</title>
+    <title>THE MOST USELESS SITE</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', 'Arial', sans-serif;
-            background-color: #ffff00; /* Eye-hurting yellow */
-            color: red;
+            font-family: 'Comic Sans MS', cursive;
+            background: #ff00ff; /* Вырвиглазный розовый */
+            color: #00ff00; /* Кислотно-зеленый */
             text-align: center;
-            overflow: hidden; /* No scroll allowed */
             margin: 0;
+            overflow: hidden;
             height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
         }
 
-        h1, h2 { text-transform: uppercase; text-shadow: 2px 2px 0px #000; }
-        
         .level {
-            display: none; /* Hide levels by default */
-            width: 80%;
-            height: 80%;
+            display: none;
             background: white;
-            border: 5px dashed red;
-            padding: 20px;
-            box-shadow: 10px 10px 0px black;
-            position: relative;
+            border: 10px solid black;
+            padding: 30px;
+            width: 400px;
+            color: black;
+            box-shadow: 20px 20px 0px #000;
         }
 
-        /* Show active level */
         .active { display: block; }
 
-        button {
-            background: lime;
-            border: 3px solid black;
-            font-size: 20px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        input { display: block; margin: 10px auto; padding: 10px; width: 80%; }
         
-        button:hover { background: magenta; }
-
-        input {
-            border: 2px solid blue;
-            padding: 10px;
+        button {
+            background: yellow;
+            border: 3px solid black;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
             font-size: 18px;
-            margin: 10px;
-            width: 60%;
         }
 
-        /* Progress Bar Styles */
         #progress-container {
             width: 100%;
-            height: 50px;
-            background: #ddd;
-            border: 3px solid black;
-            margin-top: 20px;
-            position: relative;
+            height: 30px;
+            background: #eee;
+            border: 2px solid #000;
+            margin: 20px 0;
         }
 
         #progress-bar {
+            width: 0%;
             height: 100%;
             background: red;
-            width: 50%; /* Start at 50% */
-            transition: width 0.1s linear;
         }
 
+        #jumpBtn { position: absolute; }
     </style>
 </head>
 <body>
 
     <div id="lvl1" class="level active">
-        <h1>STEP 1: REGISTRATION</h1>
-        <p>Enter your details to claim your PRIZE!</p>
-        
-        <input type="text" placeholder="Your Name" oninput="this.value = this.value.split('').reverse().join('')">
-        <p style="font-size: 10px; color: grey;">(Text is written backwards, good luck)</p>
-        
-        <input type="email" placeholder="Email Address" onfocus="this.placeholder='OOPS, FORGOT IT...'" onblur="this.value=''">
-        
-        <br><br>
-        <button id="regBtn" onmouseover="runAway(this)" onclick="nextLevel(2)">SUBMIT</button>
+        <h1>STEP 1</h1>
+        <p>Register to win 1,000,000$!</p>
+        <input type="text" placeholder="Name" oninput="this.value='ERROR'">
+        <input type="email" placeholder="Email" id="emailInput">
+        <button onclick="nextLevel(2)">NEXT</button>
     </div>
 
     <div id="lvl2" class="level">
-        <h1>STEP 2: VERIFY YOU ARE HUMAN</h1>
-        <h2 id="clickCount">CLICKS LEFT: 20</h2>
-        <button id="jumpBtn" style="position:absolute;" onclick="catchButton()">I AM NOT A ROBOT</button>
+        <h1>STEP 2</h1>
+        <p id="clickTask">Click the button 20 times!</p>
+        <button id="jumpBtn" onclick="catchBtn()">CLICK ME</button>
     </div>
 
     <div id="lvl3" class="level">
-        <h1>STEP 3: BRAIN CHECK</h1>
-        <p>Solve 3 problems. Mistake = GAME RESTART.</p>
-        <h2 id="mathProblem">2 + 2 = ?</h2>
-        <input type="number" id="mathAnswer">
-        <br>
-        <button onclick="checkMath()">ANSWER</button>
+        <h1>STEP 3</h1>
+        <p>Solve to continue. Wrong answer = RESTART SITE!</p>
+        <h2 id="q">77 + 33 = ?</h2>
+        <input type="number" id="ans">
+        <button onclick="checkMath()">SUBMIT</button>
     </div>
 
     <div id="lvl4" class="level">
-        <h1>STEP 4: DON'T DROP IT!</h1>
-        <p>Smash SPACE or CLICK like crazy to reach 100%!</p>
-        <p>If it hits 0% — YOU START OVER.</p>
-        
+        <h1>STEP 4: PATIENCE</h1>
+        <p>HOLD the button until 100%. If you release - it drops to 0%!</p>
         <div id="progress-container">
             <div id="progress-bar"></div>
         </div>
-        <br>
-        <button onmousedown="boost()" onclick="boost()">CLICK HERE!!!</button>
+        <h3 id="status">READY?</h3>
+        <button onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()">HOLD ME TIGHT!</button>
     </div>
 
     <div id="lvl5" class="level">
-        <h1>CONGRATULATIONS!</h1>
-        <h2>YOU WON:</h2>
-        <h1 style="font-size: 100px;">NOTHING</h1>
-        <p>Thanks for playing ;)</p>
-        <button onclick="location.reload()">PLAY AGAIN</button>
+        <h1>YOU DID IT!</h1>
+        <p>You wasted 5 minutes of your life.</p>
+        <h1 style="font-size: 80px;">😜</h1>
+        <button onclick="location.reload()">AGAIN?</button>
     </div>
 
     <script>
-        // === GAME LOGIC ===
+        let clicks = 20;
+        let progress = 0;
+        let holdTimer;
 
-        function nextLevel(num) {
-            document.querySelectorAll('.level').forEach(el => el.classList.remove('active'));
-            document.getElementById('lvl' + num).classList.add('active');
-            
-            if (num === 2) startJumpingBtn();
-            if (num === 3) generateMath();
-            if (num === 4) startProgressBar();
-        }
-
-        // === LEVEL 1: Runaway Button ===
-        function runAway(btn) {
-            // 30% chance to run away
-            if (Math.random() > 0.7) {
-                let x = Math.random() * 200 - 100;
-                let y = Math.random() * 200 - 100;
-                btn.style.transform = `translate(${x}px, ${y}px)`;
+        function nextLevel(n) {
+            document.querySelectorAll('.level').forEach(l => l.classList.remove('active'));
+            document.getElementById('lvl' + n).classList.add('active');
+            if(n === 2) {
+                document.getElementById('jumpBtn').style.left = '50%';
+                document.getElementById('jumpBtn').style.top = '50%';
             }
         }
 
-        // === LEVEL 2: Clicker ===
-        let clicksLeft = 20; 
-        function startJumpingBtn() {
-            const btn = document.getElementById('jumpBtn');
-            btn.style.left = '40%';
-            btn.style.top = '40%';
+        // LVL 2
+        function catchBtn() {
+            clicks--;
+            document.getElementById('clickTask').innerText = "Left: " + clicks;
+            let x = Math.random() * (window.innerWidth - 100);
+            let y = Math.random() * (window.innerHeight - 100);
+            let btn = document.getElementById('jumpBtn');
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+            if(clicks <= 0) nextLevel(3);
         }
 
-        function catchButton() {
-            clicksLeft--;
-            document.getElementById('clickCount').innerText = "CLICKS LEFT: " + clicksLeft;
-            
-            const btn = document.getElementById('jumpBtn');
-            // Move button to random spot
-            btn.style.left = Math.random() * (window.innerWidth - 150) + 'px';
-            btn.style.top = Math.random() * (window.innerHeight - 150) + 'px';
-
-            if (clicksLeft <= 0) {
-                nextLevel(3);
-            }
-        }
-
-        // === LEVEL 3: Math ===
-        let currentProblem = 0;
-        const problems = [
-            { q: "5 + 5 * 5 = ?", a: 30 },
-            { q: "100 - 99 = ?", a: 1 },
-            { q: "2 + 2 * 2 = ?", a: 6 } 
-        ];
-
-        function generateMath() {
-            if (currentProblem >= problems.length) {
-                nextLevel(4);
-                return;
-            }
-            document.getElementById('mathProblem').innerText = problems[currentProblem].q;
-            document.getElementById('mathAnswer').value = "";
-        }
-
+        // LVL 3
         function checkMath() {
-            let ans = parseInt(document.getElementById('mathAnswer').value);
-            if (ans === problems[currentProblem].a) {
-                currentProblem++;
-                generateMath();
-            } else {
-                alert("WRONG! HA-HA! START OVER!");
-                location.reload(); // BRUTAL RELOAD
-            }
+            let val = document.getElementById('ans').value;
+            if(val == "110") nextLevel(4);
+            else location.reload(); // Жестокий рестарт
         }
 
-        // === LEVEL 4: Progress Bar ===
-        let progress = 50;
-        let timer;
+        // LVL 4
+        function startHold() {
+            document.getElementById('status').innerText = "KEEP HOLDING!!!";
+            holdTimer = setInterval(() => {
+                if(progress < 99) progress += 1;
+                else progress += 0.1; // Тот самый завис на 99%
 
-        function startProgressBar() {
-            timer = setInterval(() => {
-                progress -= 0.6; // Speed of drop
-                updateBar();
+                document.getElementById('progress-bar').style.width = progress + "%";
                 
-                if (progress <= 0) {
-                    clearInterval(timer);
-                    alert("YOU DROPPED THE BAR! START OVER!");
-                    location.reload();
-                }
-                if (progress >= 100) {
-                    clearInterval(timer);
+                if(progress >= 100) {
+                    clearInterval(holdTimer);
                     nextLevel(5);
                 }
-            }, 50); 
+            }, 100);
         }
 
-        function boost() {
-            progress += 4; // Boost amount
-            if (progress > 100) progress = 100;
-            updateBar();
-        }
-
-        function updateBar() {
-            document.getElementById('progress-bar').style.width = progress + "%";
-        }
-
-        // Spacebar support for Level 4
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' && document.getElementById('lvl4').classList.contains('active')) {
-                boost();
+        function stopHold() {
+            clearInterval(holdTimer);
+            if(progress < 100) {
+                progress = 0;
+                document.getElementById('progress-bar').style.width = "0%";
+                document.getElementById('status').innerText = "YOU LOOSE! HOLD AGAIN!";
             }
-        });
-
+        }
     </script>
 </body>
 </html>
